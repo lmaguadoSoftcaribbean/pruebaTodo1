@@ -65,13 +65,22 @@ CREATE TABLE `crl_token_blacklist` (
     ON UPDATE NO ACTION
 ) ENGINE=InnoDB;
 
+CREATE TABLE `grl_products` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT,
+  `code` VARCHAR(45),
+  `name` VARCHAR(255),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `key_UNIQUE` (`code`)
+) ENGINE=InnoDB;
+
 --
 -- insert initial data
 --
 
 INSERT INTO `hulk_store_db`.`grl_permissions` (`id`, `label`, `weight`) VALUES ('1', 'NONE', '0');
 INSERT INTO `hulk_store_db`.`grl_permissions` (`id`, `label`, `weight`) VALUES ('2', 'WORKER', '1');
-INSERT INTO `hulk_store_db`.`grl_permissions` (`id`, `label`, `weight`) VALUES ('3', 'ADMIN', '10');
+INSERT INTO `hulk_store_db`.`grl_permissions` (`id`, `label`, `weight`) VALUES ('3', 'BUYER', '5');
+INSERT INTO `hulk_store_db`.`grl_permissions` (`id`, `label`, `weight`) VALUES ('4', 'ADMIN', '10');
 
 --
 -- creation of procedure
@@ -197,12 +206,30 @@ BEGIN
     CALL `GET_USER`(_id);
 END$$
 
-CREATE PROCEDURE `IS_USER_EXISTS` (IN _email VARCHAR(45))
+CREATE PROCEDURE `IS_USER_EXISTS` (IN _email VARCHAR(255))
 BEGIN
 	SELECT
 		COUNT(`grl_users`.`id`) AS 'RESULT'
 	FROM `hulk_store_db`.`grl_users`
 	WHERE `grl_users`.`email`=UPPER(_email);
+END$$
+
+--
+-- products
+--
+CREATE PROCEDURE `CREATE_PRODUCT` (IN _code VARCHAR(45), IN _name VARCHAR(255))
+BEGIN
+	INSERT INTO `hulk_store_db`.`grl_products` (`code`, `name`) VALUES (UPPER(_name), UPPER(_name));
+    SELECT
+		`grl_products`.`id` AS "PRODUCT_ID",
+        `grl_products`.`code` AS "PRODUCT_ID",
+        `grl_products`.`name` AS "PRODUCT_ID"
+	FROM `hulk_store_db`.`grl_products`
+    WHERE `grl_products`.`code` = UPPER(_code);
+END$$
+
+CREATE PROCEDURE `GET_PRODUCT` (IN _code VARCHAR(45))
+BEGIN
 END$$
 
 DELIMITER ;

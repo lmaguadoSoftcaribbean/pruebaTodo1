@@ -1,0 +1,29 @@
+.nav-top-bar {
+    width: 100%;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+    background-color: rgba(50, 50, 50, 0.8);
+}
+
+    .nav-top-bar .title {
+        padding-left: .5rem;
+    }
+
+    .nav-top-bar .button {
+        width: 200px;
+        text-align: right;
+        padding-right: .5rem;
+    }
+
+.nav-top-menu {
+    width: 100%;
+    background-color: rgba(100, 100, 100, 0.8);
+}
+
+    .nav-top-menu table {
+        width: 100%;
+    }
+
+    .nav-top-menu table tr td {
+        text-align: center;
+    }
