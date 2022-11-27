@@ -1,0 +1,19 @@
+<div>
+  <div>
+    <label for="">Iniciar sesión</label>
+  </div>
+  <form>
+    <div>
+      <input type="text" name="usuario" id="username" placeholder="Usuario" [(ngModel)]="usuario.username">
+    </div>
+    <div>
+      <input type="password" name="password" id="password" placeholder="Contraseña" [(ngModel)]="usuario.password">
+    </div>
+    <div>
+      <button (click)="logear()">Iniciar sesión</button>
+    </div>
+    <div>
+      <p>Si no tiene una cuenta creada <a routerLink="/register">Registrese.</a></p>
+    </div>
+  </form>
+</div>
