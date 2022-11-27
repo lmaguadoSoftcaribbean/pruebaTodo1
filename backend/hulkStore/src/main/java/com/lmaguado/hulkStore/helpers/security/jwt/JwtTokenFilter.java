@@ -30,19 +30,18 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         try {
             String token = getToken(request);
-            if (
-                    token != null &&
-                    queriesServices.getTokenBlacklist(token).isEmpty() &&
-                    jwtProvider.validateToken(token)
-            ) {
-                String username = jwtProvider.getUserNameFromToken(token);
-                UserDetails userDetails = detailsService.loadUserByUsername(username);
-                UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-                SecurityContextHolder.getContext().setAuthentication(auth);
+            if (token != null) {
+                boolean validate = jwtProvider.validateToken(token);
+                if (validate) {
+                    String username = jwtProvider.getUserNameFromToken(token);
+                    UserDetails userDetails = detailsService.loadUserByUsername(username);
+                    UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                    SecurityContextHolder.getContext().setAuthentication(auth);
+                }
             }
         } catch (Exception e) {
-            //String errMsg = ">> JwtTokenFilter:\n" + e;
-            //LOGGER.error(errMsg);
+            String errMsg = ">> JwtTokenFilter:\n" + e;
+            LOGGER.error(errMsg);
         }
         filterChain.doFilter(request, response);
     }

@@ -39,4 +39,21 @@ public class GeneralResponsiveModel {
     public void setData(Object data) {
         this.data = data;
     }
+
+    @Override
+    public String toString() {
+        return "GeneralResponsiveModel{" +
+                "status=" + status +
+                ", code=" + code +
+                ", message='" + message + '\'' +
+                ", data=" + data +
+                '}';
+    }
+
+    public static void updateGeneralModel(GeneralResponsiveModel generalResponsiveModel, HttpStatus httpStatus, int code, String message, Object data) {
+        generalResponsiveModel.setStatus(httpStatus);
+        generalResponsiveModel.setCode(code);
+        generalResponsiveModel.setMessage(message);
+        generalResponsiveModel.setData(data);
+    }
 }

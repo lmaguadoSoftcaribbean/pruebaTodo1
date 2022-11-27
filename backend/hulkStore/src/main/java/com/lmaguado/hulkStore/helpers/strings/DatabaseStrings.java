@@ -4,9 +4,15 @@ public class DatabaseStrings {
     private DatabaseStrings()  {
         throw new IllegalStateException("Constants - Utility class");
     }
+    // Database Name
+    public static final String GET_DATABASE_NAME = "hulk_store_db";
+
+    // General
+    public static final String GET_RESULT = "RESULT";
 
     // Store procedure -> GET_USER
     public static final String GET_USER_ID = "USER_ID";
+    public static final String GET_USER_NAME = "USER_NAME";
     public static final String GET_USER_EMAIL = "USER_EMAIL";
     public static final String GET_USER_PERM_LABEL = "PERM_LABEL";
     public static final String GET_USER_PERM_WEIGHT = "PERM_WEIGHT";

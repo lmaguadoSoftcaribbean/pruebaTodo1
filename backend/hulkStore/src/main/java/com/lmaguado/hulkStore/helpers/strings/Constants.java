@@ -12,5 +12,4 @@ public class Constants {
     public static final String PROPERTIES_DATABASE_NAME = "database";
     public static final String PROPERTIES_JWT_NAME = "jwt";
     public static final String PROPERTY_FILE_DEFAULT_VALUE = "{Not_Implement}";
-    public static final String PROPERTY_FILE_JWT_EXPIRATION_TIME = "3600";
 }

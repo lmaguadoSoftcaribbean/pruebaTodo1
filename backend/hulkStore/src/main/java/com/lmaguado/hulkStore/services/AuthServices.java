@@ -27,16 +27,16 @@ public class AuthServices {
     @Autowired
     private JwtProvider jwtProvider;
 
-    public void createNewUserAccount(GeneralResponsiveModel responsive, UserModel.UserModelBasic user) {
-        if (isUserRegisterDataEmpty(responsive, user) || isUserExist(responsive, queriesServices.isUserExists(user.getEmail()))) return;
-        createUser(responsive, queriesServices.createUser(user.getEmail(), passwordEncoder.encode(user.getPassword())));
+    public void createNewUserAccount(GeneralResponsiveModel responsive, UserModel.UserRegisterModel user) {
+        if (isUserRegisterDataEmpty(responsive, user) || isUserExist(responsive, queriesServices.isUserExists(user.getUsername()))) return;
+        createUser(responsive, queriesServices.createUser(user.getUsername(), passwordEncoder.encode(user.getPassword()), user.getEmail()));
     }
 
-    private boolean isUserRegisterDataEmpty(@NonNull GeneralResponsiveModel responsive, UserModel.UserModelBasic user) {
+    private boolean isUserRegisterDataEmpty(@NonNull GeneralResponsiveModel responsive, UserModel.UserRegisterModel user) {
         if (
-                user.getEmail() != null
+                user.getUsername() != null
                 && user.getPassword() != null
-                && user.getEmail().length() > 0
+                && user.getUsername().length() > 0
                 && user.getPassword().length() > 0
         ) return false;
         responsive.setStatus(HttpStatus.OK);
@@ -65,9 +65,9 @@ public class AuthServices {
         }
     }
 
-    public void loginUserAccount(GeneralResponsiveModel responsive, UserModel.UserModelBasic user) {
-        if (isUserLoginDataEmpty(responsive, user) || !isUserExist(responsive, queriesServices.isUserExists(user.getEmail()))) return;
-        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(user.getEmail(), user.getPassword()));
+    public void loginUserAccount(GeneralResponsiveModel responsive, UserModel.UserLoginModel user) {
+        if (isUserLoginDataEmpty(responsive, user) || !isUserExist(responsive, queriesServices.isUserExists(user.getUsername()))) return;
+        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword()));
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String jwt = jwtProvider.generateToken(authentication);
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
@@ -79,11 +79,11 @@ public class AuthServices {
         responsive.setData(jwtDTO);
     }
 
-    private boolean isUserLoginDataEmpty(@NonNull GeneralResponsiveModel responsive, UserModel.UserModelBasic user) {
+    private boolean isUserLoginDataEmpty(@NonNull GeneralResponsiveModel responsive, UserModel.UserLoginModel user) {
         if (
-                user.getEmail() != null
+                user.getUsername() != null
                         && user.getPassword() != null
-                        && user.getEmail().length() > 0
+                        && user.getUsername().length() > 0
                         && user.getPassword().length() > 0
         ) return false;
         responsive.setStatus(HttpStatus.OK);

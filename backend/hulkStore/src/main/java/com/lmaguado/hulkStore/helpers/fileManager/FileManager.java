@@ -10,7 +10,6 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 import java.io.*;
 import java.util.Properties;
-import java.util.UUID;
 
 @Component
 public class FileManager {
@@ -61,7 +60,6 @@ public class FileManager {
     private Properties getFilePropertiesSecret(String fileName) throws FileManagerException {
         Properties properties = new Properties();
         File folder = new File(Constants.FOLDER_SECRET_PATH);
-        if (!(new File(folder.getAbsolutePath() + File.separator + fileName + envTag + EXT_FILE).exists())) createFileSecret(fileName);
         try (InputStream inputStream = new FileInputStream(folder.getAbsolutePath() + File.separator + fileName + envTag + EXT_FILE)) {
             properties.load(inputStream);
         } catch (IOException ex) {

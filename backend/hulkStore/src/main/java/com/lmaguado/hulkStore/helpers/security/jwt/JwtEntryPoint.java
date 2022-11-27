@@ -2,6 +2,7 @@ package com.lmaguado.hulkStore.helpers.security.jwt;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
@@ -18,7 +19,7 @@ public class JwtEntryPoint implements AuthenticationEntryPoint {
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException)
             throws IOException, ServletException {
-        LOGGER.error(">> JwtEntryPoint:\n\tWas generated a error on commence method.");
-        response.sendRedirect("/unauthorized");
+        LOGGER.error(">> JwtEntryPoint: {}", authException.getMessage());
+        response.sendRedirect("/api/unauthorized");
     }
 }

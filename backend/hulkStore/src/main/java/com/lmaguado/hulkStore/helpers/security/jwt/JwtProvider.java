@@ -15,8 +15,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.sql.Date;
-import java.time.LocalDate;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,20 +37,8 @@ public class JwtProvider {
     @PostConstruct
     public void postJwtProvider() throws FileManagerException {
         secret = fileManager.getPropertyByKey(Constants.PROPERTIES_JWT_NAME, "secret");
-        if (secret.equals(Constants.PROPERTY_FILE_DEFAULT_VALUE)) {
-            fileManager.setPropertyByKey(Constants.PROPERTIES_JWT_NAME, "secret", Constants.getRandomUUID());
-            secret = fileManager.getPropertyByKey(Constants.PROPERTIES_JWT_NAME, "secret");
-        }
-        issuedAt = Date.valueOf(LocalDate.now());
-        String expirationString = fileManager.getPropertyByKey(Constants.PROPERTIES_JWT_NAME, "expirationTime");
-        try {
-            expiration = issuedAt.getTime() + Long.parseLong(expirationString) * 1000;
-        } catch (NumberFormatException ex) {
-            fileManager.setPropertyByKey(Constants.PROPERTIES_JWT_NAME, "expirationTime", Constants.PROPERTY_FILE_JWT_EXPIRATION_TIME);
-            expirationString = fileManager.getPropertyByKey(Constants.PROPERTIES_JWT_NAME, "expirationTime");
-            expiration = issuedAt.getTime() + Long.parseLong(expirationString) * 1000;
-        }
-
+        issuedAt = new Date();
+        expiration = issuedAt.getTime() + Long.parseLong(fileManager.getPropertyByKey(Constants.PROPERTIES_JWT_NAME, "expirationTime")) * 1000;
     }
 
     public String generateToken(Authentication authentication) {
@@ -82,7 +69,6 @@ public class JwtProvider {
 
     public boolean validateToken(String token) throws TokenExpiredException {
         try {
-
             JWTVerifier verification = JWT.require(Algorithm.HMAC256(secret)).build();
             verification.verify(token);
             return true;

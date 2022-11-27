@@ -9,43 +9,42 @@ DROP USER IF EXISTS 'hulkstore'@'localhost';
 CREATE USER 'hulkstore'@'localhost' IDENTIFIED BY 'hulkstore';
 GRANT EXECUTE ON `hulk_store_db`.* TO 'hulkstore'@'localhost';
 
-USE `hulk_store_db`;
-
 --
 -- creation of tables
 --
 
-CREATE TABLE `crl_params` (
+CREATE TABLE `hulk_store_db`.`crl_params` (
   `key` VARCHAR(100) NOT NULL,
   `value` VARCHAR(255) NOT NULL,
   PRIMARY KEY (`key`),
   UNIQUE KEY `key_UNIQUE` (`key`)
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8_bin;
 
-CREATE TABLE `grl_permissions` (
+CREATE TABLE `hulk_store_db`.`grl_permissions` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `label` VARCHAR(45) NOT NULL,
   `weight` INT(3) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE INDEX `grl_permissions_weight_UNIQUE` (`weight` ASC) VISIBLE,
   UNIQUE INDEX `grl_permissions_label_UNIQUE` (`label` ASC) VISIBLE
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8_bin;
 
-CREATE TABLE `grl_users` (
+CREATE TABLE `hulk_store_db`.`grl_users` (
   `id` BIGINT NOT NULL AUTO_INCREMENT,
-  `email` VARCHAR(255) NOT NULL,
+  `username` VARCHAR(45) NOT NULL,
   `password` VARCHAR(255) NOT NULL,
+  `email` VARCHAR(255) NOT NULL,
   `permission` INT DEFAULT 1,
   PRIMARY KEY (`id`),
-  UNIQUE INDEX `grl_users_email_UNIQUE` (`email` ASC) VISIBLE,
+  UNIQUE INDEX `grl_users_username_UNIQUE` (`username` ASC) VISIBLE,
   CONSTRAINT `fk/grl_users/grl_permissions`
 	FOREIGN KEY (`permission` ASC)
 	REFERENCES `hulk_store_db`.`grl_permissions` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8_bin;
 
-CREATE TABLE `crl_token_blacklist` (
+CREATE TABLE `hulk_store_db`.`crl_token_blacklist` (
   `token` VARCHAR(255) NOT NULL,
   `token_own` BIGINT,
   `reason` VARCHAR(255),
@@ -63,24 +62,34 @@ CREATE TABLE `crl_token_blacklist` (
 	REFERENCES `hulk_store_db`.`grl_users` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8_bin;
 
-CREATE TABLE `grl_products` (
+CREATE TABLE `hulk_store_db`.`grl_products` (
   `id` BIGINT NOT NULL AUTO_INCREMENT,
-  `code` VARCHAR(45),
-  `name` VARCHAR(255),
+  `code` VARCHAR(45) NOT NULL,
+  `name` VARCHAR(255) NOT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `key_UNIQUE` (`code`)
-) ENGINE=InnoDB;
+  UNIQUE INDEX `grl_products_code_UNIQUE` (`code` ASC) VISIBLE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8_bin;
+
+CREATE TABLE `hulk_store_db`.`grl_products_details` (
+  `code` VARCHAR(45) NOT NULL,
+  PRIMARY KEY (`code`),
+  CONSTRAINT `fk/grl_products_details/grl_products`
+	FOREIGN KEY (`code` ASC)
+	REFERENCES `hulk_store_db`.`grl_products` (`code`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8_bin;
 
 --
 -- insert initial data
 --
 
 INSERT INTO `hulk_store_db`.`grl_permissions` (`id`, `label`, `weight`) VALUES ('1', 'NONE', '0');
-INSERT INTO `hulk_store_db`.`grl_permissions` (`id`, `label`, `weight`) VALUES ('2', 'WORKER', '1');
-INSERT INTO `hulk_store_db`.`grl_permissions` (`id`, `label`, `weight`) VALUES ('3', 'BUYER', '5');
-INSERT INTO `hulk_store_db`.`grl_permissions` (`id`, `label`, `weight`) VALUES ('4', 'ADMIN', '10');
+INSERT INTO `hulk_store_db`.`grl_permissions` (`id`, `label`, `weight`) VALUES ('2', 'BUYER', '1');
+INSERT INTO `hulk_store_db`.`grl_permissions` (`id`, `label`, `weight`) VALUES ('3', 'WORKER', '10');
+INSERT INTO `hulk_store_db`.`grl_permissions` (`id`, `label`, `weight`) VALUES ('4', 'ADMIN', '100');
 
 --
 -- creation of procedure
@@ -91,13 +100,12 @@ DELIMITER $$
 --
 -- params
 --
-CREATE PROCEDURE `CREATE_PARAM` (IN _key VARCHAR(100), IN _value VARCHAR(200))
+CREATE PROCEDURE `hulk_store_db`.`CREATE_PARAM` (IN _key VARCHAR(100), IN _value VARCHAR(200))
 BEGIN
 	INSERT INTO `hulk_store_db`.`crl_params` (`key`, `value`) VALUES (UPPER(_key), UPPER(_value));
-    CALL `GET_USER`(_key);
 END$$
 
-CREATE PROCEDURE `GET_PARAM` (IN _key VARCHAR(100))
+CREATE PROCEDURE `hulk_store_db`.`GET_PARAM` (IN _key VARCHAR(100))
 BEGIN
 	SELECT
 		`value` AS 'PARAM_VALUE'
@@ -108,11 +116,11 @@ END$$
 --
 -- token balcklist
 --
-CREATE PROCEDURE `CREATE_TOKEN_BLACKLIST_MANUAL` (IN _token VARCHAR(255), IN _own BIGINT, IN _reason VARCHAR(255), IN _blockedBy BIGINT, IN _expired DATE)
+CREATE PROCEDURE `hulk_store_db`.`CREATE_TOKEN_BLACKLIST_MANUAL` (IN _token VARCHAR(255), IN _own BIGINT, IN _reason VARCHAR(255), IN _blockedBy BIGINT, IN _expired DATE)
 BEGIN
 END$$
 
-CREATE PROCEDURE `CREATE_TOKEN_BLACKLIST_AUTO` (IN _token VARCHAR(255), IN _own BIGINT, IN _expired DATE)
+CREATE PROCEDURE `hulk_store_db`.`CREATE_TOKEN_BLACKLIST_AUTO` (IN _token VARCHAR(255), IN _own BIGINT, IN _expired DATE)
 BEGIN
 	INSERT INTO `hulk_store_db`.`crl_token_blacklist` (`token`, `token_own`, `expired`) VALUES (_token, _own, _expired);
     SELECT
@@ -121,7 +129,7 @@ BEGIN
     WHERE `token` = _token;
 END$$
 
-CREATE PROCEDURE `GET_TOKEN_BLACKLIST` (IN _token VARCHAR(255))
+CREATE PROCEDURE `hulk_store_db`.`GET_TOKEN_BLACKLIST` (IN _token VARCHAR(255))
 BEGIN
 	SELECT
 		`crl_token_blacklist`.`token` AS 'TOKEN_TOKEN',
@@ -137,7 +145,12 @@ END$$
 --
 -- permissions
 --
-CREATE PROCEDURE `GET_PERMISSIONS` ()
+CREATE PROCEDURE `hulk_store_db`.`CREATE_PERMISSION` (IN _label VARCHAR(45), IN _weight INT(3))
+BEGIN
+	INSERT INTO `hulk_store_db`.`grl_permissions` (`label`, `weight`) VALUES (UPPER(_label), _weight);
+END$$
+
+CREATE PROCEDURE `hulk_store_db`.`GET_PERMISSIONS` ()
 BEGIN
 	SELECT
 		`id` AS 'PERMIT_ID',
@@ -146,7 +159,7 @@ BEGIN
     FROM `hulk_store_db`.`grl_permissions`;
 END$$
 
-CREATE PROCEDURE `GET_PERMISSION` (IN _id INT)
+CREATE PROCEDURE `hulk_store_db`.`GET_PERMISSION` (IN _id INT)
 BEGIN
 	SELECT
 		`id` AS 'PERMIT_ID',
@@ -159,76 +172,77 @@ END$$
 --
 -- users
 --
-CREATE PROCEDURE `CREATE_USER` (IN _email VARCHAR(255), IN _password VARCHAR(255))
+CREATE PROCEDURE `hulk_store_db`.`CREATE_USER` (IN _username VARCHAR(45), IN _password VARCHAR(255), IN _email VARCHAR(255))
 BEGIN
-	INSERT INTO `hulk_store_db`.`grl_users` (`password`, `email`) VALUES (_password, UPPER(_email));
+	INSERT INTO `hulk_store_db`.`grl_users` (`username`, `password`, `email`) VALUES (UPPER(_username), _password, UPPER(_email));
     SELECT
 		`grl_users`.`id` AS "USER_ID"
 	FROM `hulk_store_db`.`grl_users`
-    WHERE `grl_users`.`email` = UPPER(_email);
+    WHERE `grl_users`.`username` = UPPER(_username);
 END$$
 
-CREATE PROCEDURE `GET_USER_BY_ID` (IN _id BIGINT)
+CREATE PROCEDURE `hulk_store_db`.`GET_USER_BY_ID` (IN _id BIGINT)
 BEGIN
 	SELECT
 		`grl_users`.`id` AS 'USER_ID',
 		`grl_users`.`username` AS 'USER_NAME',
-		`grl_permissions`.`label` AS 'PERM_LABEL',
-		`grl_permissions`.`weight` AS 'PERM_WEIGHT'
-	FROM `hulk_store_db`.`grl_users`
-		INNER JOIN `grl_permissions` ON `grl_users`.`permission`=`grl_permissions`.`id`
-	WHERE `grl_users`.`id`=_id;
-END$$
-
-CREATE PROCEDURE `GET_USER_BY_Email` (IN _email VARCHAR(255))
-BEGIN
-	SELECT
-		`grl_users`.`id` AS 'USER_ID',
         `grl_users`.`email` AS 'USER_EMAIL',
 		`grl_permissions`.`label` AS 'PERM_LABEL',
 		`grl_permissions`.`weight` AS 'PERM_WEIGHT'
 	FROM `hulk_store_db`.`grl_users`
 		INNER JOIN `grl_permissions` ON `grl_users`.`permission`=`grl_permissions`.`id`
-	WHERE `grl_users`.`email`=_email;
-END$$
-
-CREATE PROCEDURE `GET_USER_PASS` (IN _id BIGINT)
-BEGIN
-	SELECT
-		`grl_users`.`password` AS 'USER_PASSWORD'
-	FROM `legion_latinoamericana_db`.`grl_users`
 	WHERE `grl_users`.`id`=_id;
 END$$
 
-CREATE PROCEDURE `SET_USER_PERMISSION` (IN _id BIGINT, IN _permission INT)
+CREATE PROCEDURE `hulk_store_db`.`GET_USER_BY_USERNAME` (IN _username VARCHAR(45))
+BEGIN
+	SELECT
+		`grl_users`.`id` AS 'USER_ID',
+		`grl_users`.`username` AS 'USER_NAME',
+        `grl_users`.`email` AS 'USER_EMAIL',
+		`grl_permissions`.`label` AS 'PERM_LABEL',
+		`grl_permissions`.`weight` AS 'PERM_WEIGHT'
+	FROM `hulk_store_db`.`grl_users`
+		INNER JOIN `grl_permissions` ON `grl_users`.`permission`=`grl_permissions`.`id`
+	WHERE `grl_users`.`username`=_username;
+END$$
+
+CREATE PROCEDURE `hulk_store_db`.`GET_USER_PASS` (IN _id BIGINT)
+BEGIN
+	SELECT
+		`grl_users`.`password` AS 'USER_PASSWORD'
+	FROM `hulk_store_db`.`grl_users`
+	WHERE `grl_users`.`id`=_id;
+END$$
+
+CREATE PROCEDURE `hulk_store_db`.`SET_USER_PERMISSION` (IN _id BIGINT, IN _permission INT)
 BEGIN
 	UPDATE `hulk_store_db`.`grl_users` SET `permission` = _permission WHERE (`id` = _id);
     CALL `GET_USER`(_id);
 END$$
 
-CREATE PROCEDURE `IS_USER_EXISTS` (IN _email VARCHAR(255))
+CREATE PROCEDURE `hulk_store_db`.`IS_USER_EXISTS` (IN _username VARCHAR(45))
 BEGIN
 	SELECT
 		COUNT(`grl_users`.`id`) AS 'RESULT'
 	FROM `hulk_store_db`.`grl_users`
-	WHERE `grl_users`.`email`=UPPER(_email);
+	WHERE `grl_users`.`username`=UPPER(_username);
 END$$
 
 --
--- products
+-- Products
 --
-CREATE PROCEDURE `CREATE_PRODUCT` (IN _code VARCHAR(45), IN _name VARCHAR(255))
+CREATE PROCEDURE `hulk_store_db`.`IS_PRODUCT_EXISTS` (IN _code VARCHAR(45), IN _name VARCHAR(255))
 BEGIN
-	INSERT INTO `hulk_store_db`.`grl_products` (`code`, `name`) VALUES (UPPER(_name), UPPER(_name));
-    SELECT
-		`grl_products`.`id` AS "PRODUCT_ID",
-        `grl_products`.`code` AS "PRODUCT_ID",
-        `grl_products`.`name` AS "PRODUCT_ID"
-	FROM `hulk_store_db`.`grl_products`
-    WHERE `grl_products`.`code` = UPPER(_code);
 END$$
 
-CREATE PROCEDURE `GET_PRODUCT` (IN _code VARCHAR(45))
+CREATE PROCEDURE `hulk_store_db`.`CREATE_PRODUCT` (IN _code VARCHAR(45), IN _name VARCHAR(255))
+BEGIN
+	INSERT INTO `hulk_store_db`.`grl_products` (`code`, `name`) VALUES (UPPER(_code), _password, UPPER(_name));
+    INSERT INTO `hulk_store_db`.`grl_products_details` (`code`, `name`, `email`) VALUES (UPPER(_username), _password, UPPER(_email));
+END$$
+
+CREATE PROCEDURE `hulk_store_db`.`GET_PRODUCT` (IN _code VARCHAR(45))
 BEGIN
 END$$
 
