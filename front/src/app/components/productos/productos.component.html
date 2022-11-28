@@ -2,4 +2,18 @@
   <div>
     <button (click)="cerrarSesion()">Cerrar sesión</button>
   </div>
+  <div>
+    <table>
+      <tr>
+        <th>Codigo</th>
+        <th>Nombre</th>
+        <th>Unidades disponibles</th>
+      </tr>
+    </table>
+    <tr *ngFor="let producto of productos">
+      <td>{{producto.code}}</td>
+      <td>{{producto.name}}</td>
+      <td>{{producto.unit}}</td>
+    </tr>
+  </div>
 </div>
