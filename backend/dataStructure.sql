@@ -74,6 +74,7 @@ CREATE TABLE `hulk_store_db`.`grl_products` (
 
 CREATE TABLE `hulk_store_db`.`grl_products_details` (
   `code` VARCHAR(45) NOT NULL,
+  `unit` INT DEFAULT 0,
   PRIMARY KEY (`code`),
   CONSTRAINT `fk/grl_products_details/grl_products`
 	FOREIGN KEY (`code` ASC)
@@ -81,15 +82,6 @@ CREATE TABLE `hulk_store_db`.`grl_products_details` (
     ON DELETE NO ACTION
     ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8_bin;
-
---
--- insert initial data
---
-
-INSERT INTO `hulk_store_db`.`grl_permissions` (`id`, `label`, `weight`) VALUES ('1', 'NONE', '0');
-INSERT INTO `hulk_store_db`.`grl_permissions` (`id`, `label`, `weight`) VALUES ('2', 'BUYER', '1');
-INSERT INTO `hulk_store_db`.`grl_permissions` (`id`, `label`, `weight`) VALUES ('3', 'WORKER', '10');
-INSERT INTO `hulk_store_db`.`grl_permissions` (`id`, `label`, `weight`) VALUES ('4', 'ADMIN', '100');
 
 --
 -- creation of procedure
@@ -232,18 +224,62 @@ END$$
 --
 -- Products
 --
-CREATE PROCEDURE `hulk_store_db`.`IS_PRODUCT_EXISTS` (IN _code VARCHAR(45), IN _name VARCHAR(255))
+CREATE PROCEDURE `hulk_store_db`.`IS_PRODUCT_EXISTS` (IN _code VARCHAR(45))
 BEGIN
+	SELECT
+		COUNT(`grl_products`.`code`) AS 'RESULT'
+	FROM `hulk_store_db`.`grl_products`
+	WHERE `grl_products`.`code`=UPPER(_code);
 END$$
 
 CREATE PROCEDURE `hulk_store_db`.`CREATE_PRODUCT` (IN _code VARCHAR(45), IN _name VARCHAR(255))
 BEGIN
-	INSERT INTO `hulk_store_db`.`grl_products` (`code`, `name`) VALUES (UPPER(_code), _password, UPPER(_name));
-    INSERT INTO `hulk_store_db`.`grl_products_details` (`code`, `name`, `email`) VALUES (UPPER(_username), _password, UPPER(_email));
+	INSERT INTO `hulk_store_db`.`grl_products` (`code`, `name`) VALUES (UPPER(_code), UPPER(_name));
+    INSERT INTO `hulk_store_db`.`grl_products_details` (`code`) VALUES (UPPER(_code));
 END$$
 
 CREATE PROCEDURE `hulk_store_db`.`GET_PRODUCT` (IN _code VARCHAR(45))
 BEGIN
+	SELECT
+		A.`code` AS 'PRODUCT_CODE',
+		A.`name` AS 'PRODUCT_NAME',
+        B.`unit` AS 'PRODUCT_UNIT'
+	FROM `hulk_store_db`.`grl_products` A
+		INNER JOIN `hulk_store_db`.`grl_products_details` B ON A.`code` = B.`code`
+	WHERE A.`code` = UPPER(_code);
+END$$
+
+CREATE PROCEDURE `hulk_store_db`.`GET_PRODUCTS` ()
+BEGIN
+	SELECT
+		A.`code` AS 'PRODUCT_CODE',
+		A.`name` AS 'PRODUCT_NAME',
+        B.`unit` AS 'PRODUCT_UNIT'
+	FROM `hulk_store_db`.`grl_products` A
+		INNER JOIN `hulk_store_db`.`grl_products_details` B ON A.`code` = B.`code`;
+END$$
+
+CREATE PROCEDURE `hulk_store_db`.`SET_PRODUCT_UNIT` (IN _code VARCHAR(45), IN _unit INT)
+BEGIN
+	UPDATE `hulk_store_db`.`grl_products_details` SET `unit` = _unit WHERE `code` = UPPER(_code);
 END$$
 
 DELIMITER ;
+
+--
+-- insert initial data
+--
+INSERT INTO `hulk_store_db`.`grl_permissions` (`id`, `label`, `weight`) VALUES ('1', 'NONE', '0');
+INSERT INTO `hulk_store_db`.`grl_permissions` (`id`, `label`, `weight`) VALUES ('2', 'BUYER', '1');
+INSERT INTO `hulk_store_db`.`grl_permissions` (`id`, `label`, `weight`) VALUES ('3', 'WORKER', '10');
+INSERT INTO `hulk_store_db`.`grl_permissions` (`id`, `label`, `weight`) VALUES ('4', 'ADMIN', '100');
+
+-- usuario para pueabas
+CALL hulk_store_db.CREATE_USER('usuario', '$2a$10$u.UrD39ca3munxT25ypY4emG.c5FCP5I7wgioYGnMB5MYtBnLojRq', 'email@correo.com');
+
+CALL hulk_store_db.CREATE_PRODUCT('DC_COMIC_1', 'Batman 1');
+CALL hulk_store_db.CREATE_PRODUCT('DC_COMIC_2', 'Batman 2');
+CALL hulk_store_db.CREATE_PRODUCT('DC_COMIC_3', 'Batman 3');
+CALL hulk_store_db.CREATE_PRODUCT('MC_COMIC_1', 'Hulk 1');
+CALL hulk_store_db.CREATE_PRODUCT('MC_COMIC_2', 'Hulk 2');
+CALL hulk_store_db.CREATE_PRODUCT('MC_COMIC_3', 'Hulk 3');

@@ -42,6 +42,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         } catch (Exception e) {
             String errMsg = ">> JwtTokenFilter:\n" + e;
             LOGGER.error(errMsg);
+            System.out.println(e.getStackTrace());
         }
         filterChain.doFilter(request, response);
     }

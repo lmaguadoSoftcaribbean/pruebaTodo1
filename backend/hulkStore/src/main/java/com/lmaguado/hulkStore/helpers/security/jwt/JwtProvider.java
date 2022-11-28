@@ -73,6 +73,7 @@ public class JwtProvider {
             verification.verify(token);
             return true;
         } catch (AlgorithmMismatchException | SignatureVerificationException | InvalidClaimException e) {
+            System.out.println(e);
             return false;
         }
     }

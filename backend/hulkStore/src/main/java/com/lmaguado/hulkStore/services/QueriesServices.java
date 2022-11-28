@@ -2,10 +2,7 @@ package com.lmaguado.hulkStore.services;
 
 import com.lmaguado.hulkStore.helpers.strings.DatabaseStrings;
 import com.lmaguado.hulkStore.models.implement.ConnectionPoolImp;
-import com.lmaguado.hulkStore.models.implement.dto.database.GetPermissionDTO;
-import com.lmaguado.hulkStore.models.implement.dto.database.GetTokenBlacklistDTO;
-import com.lmaguado.hulkStore.models.implement.dto.database.GetUserDTO;
-import com.lmaguado.hulkStore.models.implement.dto.database.GetUserPassDTO;
+import com.lmaguado.hulkStore.models.implement.dto.database.*;
 import com.lmaguado.hulkStore.models.implement.exceptions.ConnectionPoolException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -285,6 +282,76 @@ public class QueriesServices {
             connectionPool.releaseConnection(conn);
         }
         return false;
+    }
+
+    public List<GetProductDTO> getProduct(String code) {
+        Connection conn = null;
+        PreparedStatement preparedStatement = null;
+        List<GetProductDTO> list = new ArrayList<>();
+        try {
+            conn = connectionPool.getConnection();
+            if (conn == null) return list;
+            preparedStatement = conn.prepareStatement("CALL " + DatabaseStrings.GET_DATABASE_NAME + ".GET_PRODUCT(?);");
+            preparedStatement.setString(1, code);
+            list = GetProductDTO.getList(preparedStatement.executeQuery());
+        } catch (SQLException | ConnectionPoolException e) {
+            printError(e);
+        } finally {
+            try {
+                if (preparedStatement != null) preparedStatement.close();
+            } catch (SQLException e) {
+                printError(e);
+            }
+            connectionPool.releaseConnection(conn);
+        }
+        return list;
+    }
+
+    public List<GetProductDTO> getAllProducts() {
+        Connection conn = null;
+        PreparedStatement preparedStatement = null;
+        List<GetProductDTO> list = new ArrayList<>();
+        try {
+            conn = connectionPool.getConnection();
+            if (conn == null) return list;
+            preparedStatement = conn.prepareStatement("CALL " + DatabaseStrings.GET_DATABASE_NAME + ".GET_PRODUCTS();");
+            list = GetProductDTO.getList(preparedStatement.executeQuery());
+        } catch (SQLException | ConnectionPoolException e) {
+            printError(e);
+        } finally {
+            try {
+                if (preparedStatement != null) preparedStatement.close();
+            } catch (SQLException e) {
+                printError(e);
+            }
+            connectionPool.releaseConnection(conn);
+        }
+        return list;
+    }
+
+    public boolean setProductUnit(String code, int units) {
+        Connection conn = null;
+        PreparedStatement preparedStatement = null;
+        try {
+            conn = connectionPool.getConnection();
+            if (conn == null) return false;
+            preparedStatement = conn.prepareStatement("CALL " + DatabaseStrings.GET_DATABASE_NAME + ".SET_PRODUCT_UNIT(?, ?);");
+            preparedStatement.setString(1, code);
+            preparedStatement.setInt(2, units);
+            preparedStatement.executeQuery();
+        } catch (SQLException | ConnectionPoolException e) {
+            printError(e);
+            return false;
+        } finally {
+            try {
+                if (preparedStatement != null) preparedStatement.close();
+            } catch (SQLException e) {
+                printError(e);
+                return false;
+            }
+            connectionPool.releaseConnection(conn);
+        }
+        return true;
     }
 
     /**

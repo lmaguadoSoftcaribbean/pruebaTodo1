@@ -4,15 +4,12 @@ import com.lmaguado.hulkStore.models.GeneralResponsiveModel;
 import com.lmaguado.hulkStore.models.implement.httpRequest.UserModel;
 import com.lmaguado.hulkStore.services.AuthServices;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+@CrossOrigin("*")
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
-
     @Autowired
     private AuthServices services;
 

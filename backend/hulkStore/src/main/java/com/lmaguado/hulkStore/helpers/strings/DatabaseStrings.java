@@ -31,4 +31,9 @@ public class DatabaseStrings {
     public static final String GET_TOKEN_BLACKLIST_REASON = "TOKEN_REASON";
     public static final String GET_TOKEN_BLACKLIST_BLOCKED = "TOKEN_BLOCKED_BY";
     public static final String GET_TOKEN_BLACKLIST_EXPIRED = "TOKEN_EXPIRED";
+
+    // Store procedure -> GET_PRODUCTS
+    public static final String GET_PRODUCTOS_CODE = "PRODUCT_CODE";
+    public static final String GET_PRODUCTOS_NAME = "PRODUCT_NAME";
+    public static final String GET_PRODUCTOS_UNIT = "PRODUCT_UNIT";
 }
