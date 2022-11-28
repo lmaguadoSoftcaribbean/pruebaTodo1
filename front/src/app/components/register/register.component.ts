@@ -32,7 +32,7 @@ export class RegisterComponent implements OnInit {
       this.blockUI.start('Cargando...');
       this.authService.register(usuario).subscribe(res => {
         this.blockUI.stop();
-        if(res.code === 0) {
+        if(res.code === 0 && res.message == 'The user already exists.') {
           this.mostrarAlerta("Usuario no disponible.","warning");
         }
         if(res.code === 1 && res.message == 'User created successfully.'){

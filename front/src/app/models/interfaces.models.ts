@@ -15,3 +15,9 @@ export interface Data {
   message?: string;
   data?: any;
 }
+
+export interface Producto {
+  code?: string;
+  name?: string;
+  unit?: number;
+}
