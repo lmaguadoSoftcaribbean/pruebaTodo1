@@ -1,0 +1,22 @@
+<div>
+  <div>
+    <label for="">Registrarse</label>
+  </div>
+  <form>
+    <div>
+      <input type="text" name="usuario" id="usuarioRegistro" placeholder="Usuario*" [(ngModel)]="usuario.username">
+    </div>
+    <div>
+      <input type="password" name="password" id="paswordRegistro" placeholder="Contraseña*" [(ngModel)]="usuario.password">
+    </div>
+    <div>
+      <input type="mail" name="email" id="emailRegistro" placeholder="Correo electronico*" [(ngModel)]="usuario.email">
+    </div>
+    <div>
+      <button (click)="registro()">Registarse</button>
+    </div>
+    <div>
+      <p>Si ya tiene una cuenta creada <a routerLink="/login">Inicie sesion.</a></p>
+    </div>
+  </form>
+</div>
